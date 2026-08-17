@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssetController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -24,19 +25,26 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Placeholder Routes untuk Testing Role Redirect & Middleware
+// Admin Routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/users', fn () => 'Placeholder: Admin Users Page')->name('admin.users.index');
+    Route::resource('assets', AssetController::class)->except(['show'])->names('admin.assets');
 });
 
+// Supervisor Routes
 Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->group(function () {
     Route::get('/dashboard', fn () => 'Placeholder: Supervisor Dashboard')->name('supervisor.dashboard');
+    Route::get('/assets', [AssetController::class, 'supervisorIndex'])->name('supervisor.assets.index');
+    Route::patch('/assets/{asset}/condition', [AssetController::class, 'updateCondition'])->name('supervisor.assets.updateCondition');
 });
 
+// Technician Routes (Read-only assets)
 Route::middleware(['auth', 'role:technician'])->prefix('technician')->group(function () {
     Route::get('/tasks', fn () => 'Placeholder: Technician Tasks')->name('technician.tasks.index');
+    Route::get('/assets', [AssetController::class, 'technicianIndex'])->name('technician.assets.index');
 });
 
+// Executive Routes
 Route::middleware(['auth', 'role:plant_manager'])->prefix('executive')->group(function () {
     Route::get('/dashboard', fn () => 'Placeholder: Executive Dashboard')->name('executive.dashboard');
 });
