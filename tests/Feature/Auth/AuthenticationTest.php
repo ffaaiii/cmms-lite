@@ -1,41 +1,76 @@
 <?php
 
+use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-test('login screen can be rendered', function () {
-    $response = $this->get('/login');
+uses(RefreshDatabase::class);
 
-    $response->assertStatus(200);
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+test('user dapat login dengan kredensial benar', function () {
+    $role = Role::where('slug', 'technician')->first();
+    $user = User::factory()->create([
+        'role_id' => $role->id,
+        'password' => bcrypt('password123'),
+    ]);
 
     $response = $this->post('/login', [
         'email' => $user->email,
-        'password' => 'password',
+        'password' => 'password123',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertAuthenticatedAs($user);
+    $response->assertRedirect(route('technician.tasks.index'));
 });
 
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+test('user tidak dapat login dengan password salah', function () {
+    $role = Role::where('slug', 'technician')->first();
+    $user = User::factory()->create([
+        'role_id' => $role->id,
+        'password' => bcrypt('password123'),
+    ]);
 
-    $this->post('/login', [
+    $response = $this->post('/login', [
         'email' => $user->email,
-        'password' => 'wrong-password',
+        'password' => 'password-salah',
     ]);
 
     $this->assertGuest();
+    $response->assertSessionHasErrors();
 });
 
-test('users can logout', function () {
-    $user = User::factory()->create();
+test('user diarahkan ke dashboard sesuai role masing-masing setelah login', function () {
+    $cases = [
+        'admin' => 'admin.users.index',
+        'supervisor' => 'supervisor.dashboard',
+        'technician' => 'technician.tasks.index',
+        'plant_manager' => 'executive.dashboard',
+    ];
 
-    $response = $this->actingAs($user)->post('/logout');
+    foreach ($cases as $slug => $routeName) {
+        $role = Role::where('slug', $slug)->first();
+        $user = User::factory()->create([
+            'role_id' => $role->id,
+            'password' => bcrypt('password123'),
+        ]);
 
-    $this->assertGuest();
-    $response->assertRedirect('/');
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect(route($routeName));
+
+        $this->post('/logout');
+    }
+});
+
+test('route register bawaan Breeze sudah mati (404)', function () {
+    $response = $this->get('/register');
+
+    $response->assertNotFound();
 });

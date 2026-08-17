@@ -24,4 +24,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Placeholder Routes untuk Testing Role Redirect & Middleware
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/users', fn () => 'Placeholder: Admin Users Page')->name('admin.users.index');
+});
+
+Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->group(function () {
+    Route::get('/dashboard', fn () => 'Placeholder: Supervisor Dashboard')->name('supervisor.dashboard');
+});
+
+Route::middleware(['auth', 'role:technician'])->prefix('technician')->group(function () {
+    Route::get('/tasks', fn () => 'Placeholder: Technician Tasks')->name('technician.tasks.index');
+});
+
+Route::middleware(['auth', 'role:plant_manager'])->prefix('executive')->group(function () {
+    Route::get('/dashboard', fn () => 'Placeholder: Executive Dashboard')->name('executive.dashboard');
+});
+
 require __DIR__.'/auth.php';
