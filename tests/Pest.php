@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -35,16 +37,17 @@ expect()->extend('toBeOne', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Functions
+| Functions / Helpers
 |--------------------------------------------------------------------------
 |
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
+| Helper global yang dapat digunakan di seluruh file test tanpa perlu
+| mendefinisikannya ulang secara terpisah.
 |
 */
 
-function something()
+function makeUser(string $slug): User
 {
-    // ..
+    $role = Role::where('slug', $slug)->first();
+
+    return User::factory()->create(['role_id' => $role->id]);
 }

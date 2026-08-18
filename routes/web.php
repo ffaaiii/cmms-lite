@@ -44,6 +44,8 @@ Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->name('supe
     Route::post('/work-orders', [WorkOrderController::class, 'store'])->name('work-orders.store');
     Route::get('/work-orders/{workOrder}', [WorkOrderController::class, 'show'])->name('work-orders.show');
     Route::patch('/work-orders/{workOrder}/assign', [WorkOrderController::class, 'assign'])->name('work-orders.assign');
+    Route::patch('/work-orders/{workOrder}/approve', [WorkOrderController::class, 'approve'])->name('work-orders.approve');
+    Route::patch('/work-orders/{workOrder}/reject', [WorkOrderController::class, 'reject'])->name('work-orders.reject');
 });
 
 // Technician Routes
@@ -53,6 +55,7 @@ Route::middleware(['auth', 'role:technician'])->prefix('technician')->name('tech
     // Work Orders / Tasks Route (Technician)
     Route::get('/tasks', [WorkOrderController::class, 'index'])->name('tasks.index');
     Route::get('/tasks/{workOrder}', [WorkOrderController::class, 'show'])->name('tasks.show');
+    Route::patch('/tasks/{workOrder}/transition', [WorkOrderController::class, 'transition'])->name('tasks.transition');
 });
 
 // Executive Routes

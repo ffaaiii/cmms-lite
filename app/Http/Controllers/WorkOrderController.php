@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\WorkOrder\ApproveWorkOrderAction;
+use App\Actions\WorkOrder\RejectWorkOrderAction;
+use App\Actions\WorkOrder\TransitionWorkOrderStatusAction;
 use App\Http\Requests\AssignWorkOrderRequest;
+use App\Http\Requests\RejectWorkOrderRequest;
 use App\Http\Requests\StoreWorkOrderRequest;
+use App\Http\Requests\TransitionWorkOrderStatusRequest;
 use App\Models\User;
 use App\Models\WorkOrder;
 use Illuminate\Http\RedirectResponse;
@@ -97,5 +102,42 @@ class WorkOrderController extends Controller
         ]);
 
         return back()->with('success', 'Work order berhasil ditugaskan.');
+    }
+
+    public function transition(
+        TransitionWorkOrderStatusRequest $request,
+        WorkOrder $workOrder,
+        TransitionWorkOrderStatusAction $action
+    ): RedirectResponse {
+        $this->authorize('transition', $workOrder);
+
+        $action->execute(
+            $workOrder,
+            $request->validated('status'),
+            auth()->id(),
+            $request->validated('note'),
+            $request->validated('parts', []),
+        );
+
+        return back()->with('success', 'Status work order berhasil diperbarui.');
+    }
+
+    public function approve(WorkOrder $workOrder, ApproveWorkOrderAction $action): RedirectResponse
+    {
+        $this->authorize('approve', WorkOrder::class);
+
+        $action->execute($workOrder, auth()->id());
+
+        return back()->with('success', 'Work order disetujui dan ditutup.');
+    }
+
+    public function reject(
+        RejectWorkOrderRequest $request,
+        WorkOrder $workOrder,
+        RejectWorkOrderAction $action
+    ): RedirectResponse {
+        $action->execute($workOrder, auth()->id(), $request->validated('rejection_note'));
+
+        return back()->with('success', 'Work order dikembalikan ke teknisi untuk revisi.');
     }
 }

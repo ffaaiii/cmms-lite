@@ -42,4 +42,16 @@ class WorkOrderPolicy
     {
         return $user->hasRole('supervisor');
     }
+
+    // tambahkan ke WorkOrderPolicy yang sudah ada
+
+public function transition(User $user, WorkOrder $workOrder): bool
+{
+    return $user->hasRole('technician') && $workOrder->assigned_to === $user->id;
+}
+
+public function approve(User $user): bool
+{
+    return $user->hasRole('supervisor');
+}
 }

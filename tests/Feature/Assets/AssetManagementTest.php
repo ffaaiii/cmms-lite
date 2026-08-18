@@ -12,13 +12,6 @@ beforeEach(function () {
     $this->seed(RoleSeeder::class);
 });
 
-function makeUser(string $slug): User
-{
-    $role = Role::where('slug', $slug)->first();
-
-    return User::factory()->create(['role_id' => $role->id]);
-}
-
 // --- CREATE ---
 
 test('admin bisa membuat aset baru', function () {
