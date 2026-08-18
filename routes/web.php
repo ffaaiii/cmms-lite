@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WorkOrderController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -32,16 +33,26 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 });
 
 // Supervisor Routes
-Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->group(function () {
-    Route::get('/dashboard', fn () => 'Placeholder: Supervisor Dashboard')->name('supervisor.dashboard');
-    Route::get('/assets', [AssetController::class, 'supervisorIndex'])->name('supervisor.assets.index');
-    Route::patch('/assets/{asset}/condition', [AssetController::class, 'updateCondition'])->name('supervisor.assets.updateCondition');
+Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->name('supervisor.')->group(function () {
+    Route::get('/dashboard', fn () => 'Placeholder: Supervisor Dashboard')->name('dashboard');
+    Route::get('/assets', [AssetController::class, 'supervisorIndex'])->name('assets.index');
+    Route::patch('/assets/{asset}/condition', [AssetController::class, 'updateCondition'])->name('assets.updateCondition');
+
+    // Work Orders Route (Supervisor)
+    Route::get('/work-orders', [WorkOrderController::class, 'index'])->name('work-orders.index');
+    Route::get('/work-orders/create', [WorkOrderController::class, 'create'])->name('work-orders.create');
+    Route::post('/work-orders', [WorkOrderController::class, 'store'])->name('work-orders.store');
+    Route::get('/work-orders/{workOrder}', [WorkOrderController::class, 'show'])->name('work-orders.show');
+    Route::patch('/work-orders/{workOrder}/assign', [WorkOrderController::class, 'assign'])->name('work-orders.assign');
 });
 
-// Technician Routes (Read-only assets)
-Route::middleware(['auth', 'role:technician'])->prefix('technician')->group(function () {
-    Route::get('/tasks', fn () => 'Placeholder: Technician Tasks')->name('technician.tasks.index');
-    Route::get('/assets', [AssetController::class, 'technicianIndex'])->name('technician.assets.index');
+// Technician Routes
+Route::middleware(['auth', 'role:technician'])->prefix('technician')->name('technician.')->group(function () {
+    Route::get('/assets', [AssetController::class, 'technicianIndex'])->name('assets.index');
+
+    // Work Orders / Tasks Route (Technician)
+    Route::get('/tasks', [WorkOrderController::class, 'index'])->name('tasks.index');
+    Route::get('/tasks/{workOrder}', [WorkOrderController::class, 'show'])->name('tasks.show');
 });
 
 // Executive Routes
