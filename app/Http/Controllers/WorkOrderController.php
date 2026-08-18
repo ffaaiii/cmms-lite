@@ -9,6 +9,7 @@ use App\Http\Requests\AssignWorkOrderRequest;
 use App\Http\Requests\RejectWorkOrderRequest;
 use App\Http\Requests\StoreWorkOrderRequest;
 use App\Http\Requests\TransitionWorkOrderStatusRequest;
+use App\Models\Asset;
 use App\Models\User;
 use App\Models\WorkOrder;
 use Illuminate\Http\RedirectResponse;
@@ -31,6 +32,10 @@ class WorkOrderController extends Controller
 
         return Inertia::render('WorkOrders/Index', [
             'workOrders' => $query->paginate(15),
+            // Hanya dikirim kalau Supervisor — Teknisi tidak butuh, hemat payload
+            'technicians' => $user->hasRole('supervisor')
+                ? User::whereHas('role', fn ($q) => $q->where('slug', 'technician'))->get(['id', 'name'])
+                : [],
         ]);
     }
 
@@ -38,7 +43,9 @@ class WorkOrderController extends Controller
     {
         $this->authorize('create', WorkOrder::class);
 
-        return Inertia::render('WorkOrders/Create');
+        return Inertia::render('WorkOrders/Create', [
+            'assets' => Asset::where('status', 'active')->get(['id', 'name', 'category']),
+        ]);
     }
 
     public function store(StoreWorkOrderRequest $request): RedirectResponse
