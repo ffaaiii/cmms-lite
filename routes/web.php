@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\InspectionChecklistController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WorkOrderController;
 use Illuminate\Foundation\Application;
@@ -46,6 +47,11 @@ Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->name('supe
     Route::patch('/work-orders/{workOrder}/assign', [WorkOrderController::class, 'assign'])->name('work-orders.assign');
     Route::patch('/work-orders/{workOrder}/approve', [WorkOrderController::class, 'approve'])->name('work-orders.approve');
     Route::patch('/work-orders/{workOrder}/reject', [WorkOrderController::class, 'reject'])->name('work-orders.reject');
+
+    // Inspection Checklists Route (Supervisor)
+    Route::get('/checklists', [InspectionChecklistController::class, 'index'])->name('checklists.index');
+    Route::patch('/checklists/{checklist}/confirm', [InspectionChecklistController::class, 'confirm'])->name('checklists.confirm');
+    Route::patch('/checklists/{checklist}/dismiss', [InspectionChecklistController::class, 'dismiss'])->name('checklists.dismiss');
 });
 
 // Technician Routes
@@ -56,6 +62,10 @@ Route::middleware(['auth', 'role:technician'])->prefix('technician')->name('tech
     Route::get('/tasks', [WorkOrderController::class, 'index'])->name('tasks.index');
     Route::get('/tasks/{workOrder}', [WorkOrderController::class, 'show'])->name('tasks.show');
     Route::patch('/tasks/{workOrder}/transition', [WorkOrderController::class, 'transition'])->name('tasks.transition');
+
+    // Inspection Checklists Route (Technician)
+    Route::get('/checklists/create', [InspectionChecklistController::class, 'create'])->name('checklists.create');
+    Route::post('/checklists', [InspectionChecklistController::class, 'store'])->name('checklists.store');
 });
 
 // Executive Routes
