@@ -2,16 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WorkOrderLog extends Model
 {
+    use HasFactory;
+
     public $timestamps = false;
 
     protected $fillable = ['work_order_id', 'user_id', 'from_status', 'to_status', 'note'];
 
     protected $attributes = ['created_at' => null];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
 
     protected static function booted(): void
     {

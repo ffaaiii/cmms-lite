@@ -47,7 +47,10 @@ expect()->extend('toBeOne', function () {
 
 function makeUser(string $slug): User
 {
-    $role = Role::where('slug', $slug)->first();
+    $role = Role::firstOrCreate(
+        ['slug' => $slug],
+        ['name' => ucfirst($slug)]
+    );
 
     return User::factory()->create(['role_id' => $role->id]);
 }

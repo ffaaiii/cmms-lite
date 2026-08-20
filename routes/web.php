@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InspectionChecklistController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WorkOrderController;
@@ -35,7 +36,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 
 // Supervisor Routes
 Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->name('supervisor.')->group(function () {
-    Route::get('/dashboard', fn () => 'Placeholder: Supervisor Dashboard')->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'supervisor'])->name('dashboard');
     Route::get('/assets', [AssetController::class, 'supervisorIndex'])->name('assets.index');
     Route::patch('/assets/{asset}/condition', [AssetController::class, 'updateCondition'])->name('assets.updateCondition');
 
@@ -70,7 +71,7 @@ Route::middleware(['auth', 'role:technician'])->prefix('technician')->name('tech
 
 // Executive Routes
 Route::middleware(['auth', 'role:plant_manager'])->prefix('executive')->group(function () {
-    Route::get('/dashboard', fn () => 'Placeholder: Executive Dashboard')->name('executive.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'executive'])->name('executive.dashboard');
 });
 
 require __DIR__.'/auth.php';
