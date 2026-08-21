@@ -2,7 +2,9 @@
 
 namespace App\Actions\WorkOrder;
 
+use App\Models\User;
 use App\Models\WorkOrder;
+use App\Support\Notifier;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -38,9 +40,27 @@ class RejectWorkOrderAction
                 'note' => "Ditolak: {$rejectionNote}",
             ]);
 
-            // Notifikasi in-app ke semua Supervisor DITUNDA ke M4/M7 —
-            // sistem Notification belum dibangun. Untuk sekarang eskalasi
-            // cukup tercermin dari is_escalated=true + log di atas.
+            // Kirim notifikasi ke Teknisi bahwa WO ditolak
+            if ($workOrder->technician) {
+                Notifier::notify(
+                    $workOrder->technician,
+                    'wo_rejected',
+                    "Work order untuk aset \"{$workOrder->asset->name}\" ditolak: {$rejectionNote}",
+                    $workOrder->id,
+                );
+            }
+
+            // Kirim notifikasi eskalasi ke semua Supervisor jika threshold tercapai
+            if ($isEscalated) {
+                $supervisors = User::whereHas('role', fn ($q) => $q->where('slug', 'supervisor'))->get();
+
+                Notifier::notifyMany(
+                    $supervisors,
+                    'wo_escalated',
+                    "Work order untuk aset \"{$workOrder->asset->name}\" perlu eskalasi (sudah {$newRejectionCount}x ditolak).",
+                    $workOrder->id,
+                );
+            }
 
             return $workOrder->fresh();
         });

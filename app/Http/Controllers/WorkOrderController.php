@@ -12,6 +12,7 @@ use App\Http\Requests\TransitionWorkOrderStatusRequest;
 use App\Models\Asset;
 use App\Models\User;
 use App\Models\WorkOrder;
+use App\Support\Notifier;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -107,6 +108,13 @@ class WorkOrderController extends Controller
                 ? "Dialihkan ke {$technician->name}"
                 : "Ditugaskan ke {$technician->name}",
         ]);
+
+        Notifier::notify(
+            $technician,
+            'wo_assigned',
+            "Anda ditugaskan work order untuk aset \"{$workOrder->asset->name}\".",
+            $workOrder->id,
+        );
 
         return back()->with('success', 'Work order berhasil ditugaskan.');
     }
