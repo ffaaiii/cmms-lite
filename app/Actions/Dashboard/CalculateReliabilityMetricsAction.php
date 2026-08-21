@@ -45,9 +45,9 @@ class CalculateReliabilityMetricsAction
                 $startTime = Carbon::parse($startedLog->created_at);
                 $completedTime = Carbon::parse($wo->completed_at);
 
-                return $startTime->diffInMinutes($completedTime);
+                return abs($startTime->diffInMinutes($completedTime));
             })
-            ->filter(fn ($minutes) => $minutes !== null && $minutes >= 0);
+            ->filter(fn ($minutes) => $minutes !== null);
 
         if ($durations->isEmpty()) {
             return null;
@@ -96,7 +96,7 @@ class CalculateReliabilityMetricsAction
         for ($i = 1; $i < $timestamps->count(); $i++) {
             $prev = Carbon::parse($timestamps[$i - 1]);
             $curr = Carbon::parse($timestamps[$i]);
-            $gaps[] = $prev->diffInHours($curr);
+            $gaps[] = abs($prev->diffInHours($curr));
         }
 
         return round(array_sum($gaps) / count($gaps), 2);
@@ -108,7 +108,7 @@ class CalculateReliabilityMetricsAction
             ->where('status', 'closed')
             ->whereBetween('closed_at', [$from, $to])
             ->get()
-            ->map(fn (WorkOrder $wo) => Carbon::parse($wo->created_at)->diffInHours(Carbon::parse($wo->closed_at)));
+            ->map(fn (WorkOrder $wo) => abs(Carbon::parse($wo->created_at)->diffInHours(Carbon::parse($wo->closed_at))));
 
         return $durations->isEmpty() ? null : round($durations->avg(), 2);
     }
